@@ -6,6 +6,8 @@ import (
 	"nats_example/eventstores/server/rpc"
 	"net"
 
+	mysqldao "nats_example/baselib/dao"
+	"nats_example/baselib/mysql_client"
 	eventstore "nats_example/baselib/proto"
 
 	"github.com/golang/glog"
@@ -40,6 +42,8 @@ func (s *eventstoreServer) Initialize() error {
 		glog.V(1).Info(err)
 		return err
 	}
+	mysql_client.InstallMysqlClientManager(Conf.MySQL)
+	mysqldao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 
 	// s.server = grpc_util.NewRPCServer(Conf.Server.Addr, &Conf.Server.RpcDiscovery)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
@@ -51,7 +55,7 @@ func (s *eventstoreServer) Initialize() error {
 	if err != nil {
 		glog.V(1).Infof("Server init error: %v", err)
 	}
-	s.impl = rpc.NewEventStoreServiceImpl()
+	s.impl = rpc.NewEventStoreServiceImpl(mysqldao.GetOrderDAO("mysql"), Conf.NATS)
 	eventstore.RegisterEventStoreServer(s.server, s.impl)
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.server.Serve(lis); err != nil {

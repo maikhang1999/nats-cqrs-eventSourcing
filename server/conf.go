@@ -2,22 +2,26 @@ package server
 
 import (
 	"flag"
+	"nats_example/baselib/mysql_client"
+	natsclient "nats_example/baselib/nats_client"
 )
 
 var (
 	confPath string
-	Conf     *cacheConfig
+	Conf     *eventstoreConfig
 )
 
-type cacheConfig struct {
+type eventstoreConfig struct {
+	MySQL []mysql_client.MySQLConfig
+	NATS  natsclient.NatsConf
 }
 
-func (c *cacheConfig) String() string {
+func (c *eventstoreConfig) String() string {
 	return ""
 }
 
 // prepairConfig func
-func (c *cacheConfig) prepairConfig() {
+func (c *eventstoreConfig) prepairConfig() {
 
 }
 
