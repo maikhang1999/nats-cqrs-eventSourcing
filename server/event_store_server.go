@@ -55,7 +55,7 @@ func (s *eventstoreServer) Initialize() error {
 	if err != nil {
 		glog.V(1).Infof("Server init error: %v", err)
 	}
-	s.impl = rpc.NewEventStoreServiceImpl(mysqldao.GetOrderDAO("mysql"), Conf.NATS)
+	s.impl = rpc.NewEventStoreServiceImpl(mysqldao.GetEventDAO(mysqldao.DB_MASTER), Conf.NATS)
 	eventstore.RegisterEventStoreServer(s.server, s.impl)
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.server.Serve(lis); err != nil {

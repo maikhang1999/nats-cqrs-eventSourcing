@@ -1,0 +1,15 @@
+[[mysql]]
+name = "immaster"
+dsn = "testuser:Mysohapass@tcp(10.8.12.195:3306)/dtm_busi?charset=utf8mb4"
+active = 2500
+idle = 2000
+lifetime = 10
+
+[[mysql]]
+name = "imslave"
+dsn = "testuser:Mysohapass@tcp(10.8.12.195:3306)/dtm_busi?charset=utf8mb4"
+active = 2500
+idle = 2000
+lifetime = 10
+[natsConf]
+url = "nats://10.8.14.157:4222"

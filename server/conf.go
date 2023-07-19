@@ -2,8 +2,11 @@ package server
 
 import (
 	"flag"
+	"fmt"
 	"nats_example/baselib/mysql_client"
 	natsclient "nats_example/baselib/nats_client"
+
+	"github.com/BurntSushi/toml"
 )
 
 var (
@@ -27,15 +30,15 @@ func (c *eventstoreConfig) prepairConfig() {
 
 // InitializeConfig func
 func InitializeConfig() (err error) {
-	// _, err = toml.DecodeFile(confPath, &Conf)
+	_, err = toml.DecodeFile(confPath, &Conf)
 
-	// if err != nil {
-	// 	err = fmt.Errorf("decode file %s error: %+v", confPath, err)
-	// 	panic(err)
-	// }
-	// Conf.prepairConfig()
+	if err != nil {
+		err = fmt.Errorf("decode file %s error: %+v", confPath, err)
+		panic(err)
+	}
+	Conf.prepairConfig()
 	return
 }
 func init() {
-	flag.StringVar(&confPath, "conf", "./event_store.toml", "config path")
+	flag.StringVar(&confPath, "conf", "./eventstore.toml", "config path")
 }

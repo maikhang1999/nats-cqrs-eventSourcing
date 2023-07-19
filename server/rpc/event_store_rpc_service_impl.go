@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"nats_example/baselib/core/order"
+	"nats_example/baselib/core/event"
 	mysqldao "nats_example/baselib/dao/mysql_dao"
 	natsclient "nats_example/baselib/nats_client"
 	eventstore "nats_example/baselib/proto"
@@ -14,14 +14,14 @@ import (
 
 // EventStoreServiceImpl type
 type EventStoreServiceImpl struct {
-	orderModel *order.OrderDAO
+	eventModel *event.EventDAO
 	natsConn   *nats.Conn
 }
 
 // NewEventStoreServiceImpl func
-func NewEventStoreServiceImpl(orderDAO *mysqldao.OrderDAO, natsConf natsclient.NatsConf) *EventStoreServiceImpl {
+func NewEventStoreServiceImpl(eventDAO *mysqldao.EventDAO, natsConf natsclient.NatsConf) *EventStoreServiceImpl {
 	impl := &EventStoreServiceImpl{
-		orderModel: order.NewOrderDAO(orderDAO),
+		eventModel: event.NewEventDAO(eventDAO),
 		natsConn:   natsclient.NewNatsClient(natsConf),
 	}
 
@@ -30,9 +30,11 @@ func NewEventStoreServiceImpl(orderDAO *mysqldao.OrderDAO, natsConf natsclient.N
 
 func (e *EventStoreServiceImpl) CreateEvent(ctx context.Context, request *eventstore.CreateEventRequest) (*eventstore.CreateEventResponse, error) {
 	// store to event_store using mysqldb
-	e.orderModel.OrderMysqlDAO.Insert()
+	e.eventModel.OrderMysqlDAO.Insert(ctx, request.Event)
 	log.Println("Event is created")
 	// concurent with publish event to NATS
+	eventMsg := []byte(request.Event.EventData)
+	e.natsConn.Publish(request.Event.EventType, eventMsg)
 	return &eventstore.CreateEventResponse{
 		IsSuccess: true,
 	}, nil
@@ -46,6 +48,8 @@ func (e *EventStoreServiceImpl) GetEvents(ctx context.Context, request *eventsto
 func (e *EventStoreServiceImpl) GetEventsStream(*eventstore.GetEventsRequest, eventstore.EventStore_GetEventsStreamServer) error {
 	return nil
 }
+
+// TODO: Create snapshot for each order_id
 
 // Destroy func
 func (s *EventStoreServiceImpl) Destroy() {
